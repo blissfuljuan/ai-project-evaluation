@@ -11,6 +11,7 @@ import {
 import { Input } from "./ui/input";
 import { useState, type SubmitEvent } from "react";
 import { useUser } from "@/context/UserContext";
+import { APP_CONFIG } from "@/lib/app-config";
 
 export function LoginForm() {
   const navigate = useNavigate();
@@ -26,7 +27,7 @@ export function LoginForm() {
 
     try {
       await login({ email, password });
-      if (!error) navigate("/dashboard");
+      if (!error) navigate("/app/dashboard");
     } finally {
       setLoading(false);
     }
@@ -34,34 +35,39 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-sm">
-      <CardHeader>
-        <CardTitle>Login</CardTitle>
+      <CardHeader className="space-y-1">
+        <CardTitle>Welcome back</CardTitle>
         <CardDescription>
-          Enter your email and password to Login
+          Sign in to continue to {APP_CONFIG.appName}.
         </CardDescription>
       </CardHeader>
 
       <CardContent>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-
-            <Label htmlFor="email">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+            </div>
           </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}

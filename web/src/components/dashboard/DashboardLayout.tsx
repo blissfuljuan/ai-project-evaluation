@@ -1,25 +1,21 @@
-import { useState } from "react"
-import { TopBanner } from "./TopBanner"
-import { Sidebar } from "./Sidebar"
-import { MainContent } from "./MainContent"
-import { Footer } from "./Footer"
-
-
-export type Page = "dashboard" | "profile"
+import { TopBanner } from "./TopBanner";
+import { Sidebar } from "./Sidebar";
+import { Footer } from "./Footer";
+import { Outlet } from "react-router";
 
 export function DashboardLayout() {
-    const [page, setPage] = useState<Page>("dashboard")
+  return (
+    <div className="flex min-h-screen flex-col bg-muted">
+      <TopBanner />
 
-    return (
-        <div className="min-h-screen flex flex-col bg-muted">
-            <TopBanner />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="flex-1 p-6">
+          <Outlet />
+        </main>
+      </div>
 
-            <div className="flex flex-1">
-                <Sidebar page={page} onNavigate={setPage} />
-                <MainContent page={page} />
-            </div>
-
-            <Footer />
-        </div>
-    )
+      <Footer />
+    </div>
+  );
 }

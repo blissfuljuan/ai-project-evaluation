@@ -3,7 +3,7 @@ import type { UserResponse } from "@/types/user";
 
 export const userApi = {
     async me(): Promise<UserResponse> {
-        const { data } = await http.get<UserResponse>("/api/user/me");
+        const { data } = await http.get<UserResponse>("/api/auth/me");
         return data;
     }
 }
