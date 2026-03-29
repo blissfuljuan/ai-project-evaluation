@@ -1,63 +1,65 @@
 import type { ReactNode } from "react";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
-import type { Page } from "./DashboardLayout";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useUser } from "@/context/UserContext";
 
-interface SidebarProps {
-  page: Page;
-  onNavigate: (page: Page) => void;
-}
-
-export function Sidebar({ page, onNavigate }: SidebarProps) {
+export function Sidebar() {
   const navigate = useNavigate();
   const { logout } = useUser();
 
   const handleLogout = async () => {
-    logout();
-    navigate("/");
+    await logout();
+    navigate("/login");
   };
 
   return (
-    <aside className="w-56 bg-background border-r p-4 flex flex-col">
+    <aside className="flex w-64 flex-col border-r bg-background p-4">
       <nav className="space-y-1">
-        <SidebarButton
-          active={page === "dashboard"}
-          onClick={() => onNavigate("dashboard")}
-        >
-          Dashboard
-        </SidebarButton>
-
-        <SidebarButton
-          active={page === "profile"}
-          onClick={() => onNavigate("profile")}
-        >
-          Profile
-        </SidebarButton>
+        <SidebarLink to="/app/dashboard">Dashboard</SidebarLink>
+        <SidebarLink to="/app/projects">Projects</SidebarLink>
+        <SidebarLink to="/app/groups">Groups</SidebarLink>
+        <SidebarLink to="/app/submissions">Submissions</SidebarLink>
+        <SidebarLink to="/app/evaluations">Evaluations</SidebarLink>
+        <SidebarLink to="/app/profile">Profile</SidebarLink>
 
         <Separator className="my-4" />
 
-        <SidebarButton onClick={handleLogout}>Logout</SidebarButton>
+        <SidebarButton destructive onClick={handleLogout}>
+          Logout
+        </SidebarButton>
       </nav>
     </aside>
   );
 }
 
+function SidebarLink({ to, children }: { to: string; children: ReactNode }) {
+  return (
+    <NavLink to={to} className="block">
+      {({ isActive }) => (
+        <Button
+          variant={isActive ? "secondary" : "ghost"}
+          className="w-full justify-start"
+        >
+          {children}
+        </Button>
+      )}
+    </NavLink>
+  );
+}
+
 function SidebarButton({
-  active,
   destructive,
   children,
   onClick,
 }: {
-  active?: boolean;
   destructive?: boolean;
   children: ReactNode;
-  onClick: () => void;
+  onClick: () => void | Promise<void>;
 }) {
   return (
     <Button
-      variant={destructive ? "ghost" : active ? "secondary" : "ghost"}
+      variant="ghost"
       className={`w-full justify-start ${
         destructive ? "text-destructive hover:text-destructive" : ""
       }`}

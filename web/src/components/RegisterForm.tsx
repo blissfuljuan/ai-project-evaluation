@@ -12,6 +12,7 @@ import { Checkbox } from "./ui/checkbox";
 import { Button } from "./ui/button";
 import { authApi } from "@/api/auth.api";
 import { useNavigate } from "react-router-dom";
+import { APP_CONFIG } from "@/lib/app-config";
 
 export function RegisterForm() {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ export function RegisterForm() {
     setError(null);
 
     if (!acceptedTerms) {
-      alert("You must accept the terms and conditions");
+      setError("You must accept the terms and conditions");
       return;
     }
 
@@ -48,7 +49,7 @@ export function RegisterForm() {
         password,
       });
       clear();
-      navigate("/");
+      navigate("/login");
     } catch (err: any) {
       const msg =
         err?.response?.data?.message ||
@@ -57,9 +58,6 @@ export function RegisterForm() {
     } finally {
       setLoading(false);
     }
-
-    // submit to API
-    console.log("Registration submitted");
   };
 
   const clear = () => {
@@ -70,36 +68,40 @@ export function RegisterForm() {
     setPassword("");
     setConfirmPassword("");
     setAcceptedTerms(false);
-    setError("");
+    setError(null);
   };
 
   return (
     <Card className="w-full max-w-md">
-      <CardHeader>
+      <CardHeader className="space-y-1">
         <CardTitle>Create an account</CardTitle>
-        <CardDescription>Fill in the details below to register</CardDescription>
+        <CardDescription>
+          Register to start using {APP_CONFIG.appName}.
+        </CardDescription>
       </CardHeader>
 
       <CardContent>
-        {error && <p className="text-sm text-red-500">{error}</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="firstname">First name</Label>
-            <Input
-              id="firstname"
-              required
-              value={firstname}
-              onChange={(e) => setFirstname(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="lastname">Last name</Label>
-            <Input
-              id="lastname"
-              required
-              value={lastname}
-              onChange={(e) => setLastname(e.target.value)}
-            />
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="firstname">First name</Label>
+              <Input
+                id="firstname"
+                required
+                value={firstname}
+                onChange={(e) => setFirstname(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastname">Last name</Label>
+              <Input
+                id="lastname"
+                required
+                value={lastname}
+                onChange={(e) => setLastname(e.target.value)}
+              />
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="middlename">Middle name</Label>
@@ -119,6 +121,7 @@ export function RegisterForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
             />
           </div>
           <div className="space-y-2">
@@ -129,6 +132,7 @@ export function RegisterForm() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
             />
           </div>
           <div className="space-y-2">
