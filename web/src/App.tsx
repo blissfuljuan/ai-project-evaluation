@@ -4,6 +4,7 @@ import { DashboardLayout } from "./components/dashboard/DashboardLayout";
 import { LandingPage } from "./components/LandingPage";
 import { RequireAuth } from "./auth/RequireAuth";
 import { DashboardPage } from "./components/pages/DashboardPage";
+import { ClassesPage } from "./components/pages/ClassesPage";
 import { ProjectsPage } from "./components/pages/ProjectsPage";
 import { CreateProjectPage } from "./components/pages/CreateProjectPage";
 import { GroupsPage } from "./components/pages/GroupsPage";
@@ -29,6 +30,7 @@ function App() {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="classes" element={<ClassesPage />} />
         <Route path="projects" element={<ProjectsPage />} />
         <Route path="projects/create" element={<CreateProjectPage />} />
         <Route path="groups" element={<GroupsPage />} />

@@ -1,8 +1,17 @@
 package com.blissfuljuan.aiprojectevaluation.service.courseclass;
 
+import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassResponse;
+import com.blissfuljuan.aiprojectevaluation.exception.BadRequestException;
+import com.blissfuljuan.aiprojectevaluation.exception.ForbiddenException;
+import com.blissfuljuan.aiprojectevaluation.exception.ResourceNotFoundException;
+import com.blissfuljuan.aiprojectevaluation.model.CourseClass;
+import com.blissfuljuan.aiprojectevaluation.model.User;
 import com.blissfuljuan.aiprojectevaluation.model.enumtype.MembershipStatus;
+import com.blissfuljuan.aiprojectevaluation.model.enumtype.Role;
 import com.blissfuljuan.aiprojectevaluation.repository.ClassMemberRepository;
+import com.blissfuljuan.aiprojectevaluation.repository.CourseClassRepository;
+import com.blissfuljuan.aiprojectevaluation.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,20 +23,119 @@ import java.util.stream.Collectors;
 public class CourseClassServiceImpl implements CourseClassService {
 
     private final ClassMemberRepository classMemberRepository;
+    private final CourseClassRepository courseClassRepository;
+    private final UserRepository userRepository;
 
-    public CourseClassServiceImpl(ClassMemberRepository classMemberRepository) {
+    public CourseClassServiceImpl(
+            ClassMemberRepository classMemberRepository,
+            CourseClassRepository courseClassRepository,
+            UserRepository userRepository
+    ) {
         this.classMemberRepository = classMemberRepository;
+        this.courseClassRepository = courseClassRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public List<CourseClassResponse> getClassesByUser(Long userId) {
         return classMemberRepository.findByUserIdAndStatus(userId, MembershipStatus.ACTIVE)
                 .stream()
-                .map(classMember -> new CourseClassResponse(
-                        classMember.getCourseClass().getId(),
-                        classMember.getCourseClass().getClassCode(),
-                        classMember.getCourseClass().getTitle()
-                ))
+                .map(classMember -> toResponse(classMember.getCourseClass()))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<CourseClassResponse> getClassesByInstructor(Long instructorId) {
+        validateTeacherRole(instructorId);
+        return courseClassRepository.findByInstructorId(instructorId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public CourseClassResponse createClass(CourseClassRequest request, Long instructorId) {
+        validateRequest(request);
+        User instructor = validateTeacherRole(instructorId);
+
+        String normalizedClassCode = request.getClassCode().trim();
+        if (courseClassRepository.existsByClassCodeIgnoreCase(normalizedClassCode)) {
+            throw new BadRequestException("Class code is already in use");
+        }
+
+        CourseClass courseClass = new CourseClass();
+        courseClass.setClassCode(normalizedClassCode);
+        courseClass.setTitle(request.getTitle().trim());
+        courseClass.setInstructor(instructor);
+
+        return toResponse(courseClassRepository.save(courseClass));
+    }
+
+    @Override
+    @Transactional
+    public CourseClassResponse updateClass(Long classId, CourseClassRequest request, Long instructorId) {
+        validateRequest(request);
+        validateTeacherRole(instructorId);
+
+        CourseClass courseClass = findOwnedClass(classId, instructorId);
+        String normalizedClassCode = request.getClassCode().trim();
+
+        if (courseClassRepository.existsByClassCodeIgnoreCaseAndIdNot(normalizedClassCode, classId)) {
+            throw new BadRequestException("Class code is already in use");
+        }
+
+        courseClass.setClassCode(normalizedClassCode);
+        courseClass.setTitle(request.getTitle().trim());
+
+        return toResponse(courseClassRepository.save(courseClass));
+    }
+
+    @Override
+    @Transactional
+    public void deleteClass(Long classId, Long instructorId) {
+        validateTeacherRole(instructorId);
+        CourseClass courseClass = findOwnedClass(classId, instructorId);
+        courseClassRepository.delete(courseClass);
+    }
+
+    private CourseClass findOwnedClass(Long classId, Long instructorId) {
+        return courseClassRepository.findByIdAndInstructorId(classId, instructorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + classId));
+    }
+
+    private User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+    }
+
+    private User validateTeacherRole(Long userId) {
+        User user = findUserById(userId);
+        if (user.getRole() != Role.INSTRUCTOR && user.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Only instructors and administrators can manage classes");
+        }
+        return user;
+    }
+
+    private void validateRequest(CourseClassRequest request) {
+        if (request == null) {
+            throw new BadRequestException("Class request must not be null");
+        }
+
+        if (request.getClassCode() == null || request.getClassCode().trim().isEmpty()) {
+            throw new BadRequestException("Class code is required");
+        }
+
+        if (request.getTitle() == null || request.getTitle().trim().isEmpty()) {
+            throw new BadRequestException("Title is required");
+        }
+    }
+
+    private CourseClassResponse toResponse(CourseClass courseClass) {
+        return new CourseClassResponse(
+                courseClass.getId(),
+                courseClass.getClassCode(),
+                courseClass.getTitle()
+        );
     }
 }
