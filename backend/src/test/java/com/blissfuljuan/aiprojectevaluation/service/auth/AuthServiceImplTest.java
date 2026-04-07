@@ -62,7 +62,7 @@ public class AuthServiceImplTest {
 
         user = new User();
         user.setFirstname("Eric");
-        user.setLastName("Revilleza");
+        user.setLastname("Revilleza");
         user.setEmail("eric@email.com");
         user.setPassword("encoded-password");
         user.setRole(Role.STUDENT);
@@ -96,7 +96,7 @@ public class AuthServiceImplTest {
 
         User savedUser = userCaptor.getValue();
         assertThat(savedUser.getFirstname()).isEqualTo("Eric");
-        assertThat(savedUser.getLastName()).isEqualTo("Revilleza");
+        assertThat(savedUser.getLastname()).isEqualTo("Revilleza");
         assertThat(savedUser.getEmail()).isEqualTo("eric@email.com");
         assertThat(savedUser.getPassword()).isEqualTo("encoded-password");
         assertThat(savedUser.getRole()).isEqualTo(Role.STUDENT);

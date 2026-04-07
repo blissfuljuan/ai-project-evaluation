@@ -3,7 +3,7 @@ package com.blissfuljuan.aiprojectevaluation.controller;
 import com.blissfuljuan.aiprojectevaluation.dto.project.ProjectRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.project.ProjectResponse;
 import com.blissfuljuan.aiprojectevaluation.security.service.CustomUserDetails;
-import com.blissfuljuan.aiprojectevaluation.service.service.ProjectService;
+import com.blissfuljuan.aiprojectevaluation.service.project.ProjectService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

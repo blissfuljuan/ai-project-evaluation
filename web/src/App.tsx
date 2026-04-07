@@ -5,6 +5,7 @@ import { LandingPage } from "./components/LandingPage";
 import { RequireAuth } from "./auth/RequireAuth";
 import { DashboardPage } from "./components/pages/DashboardPage";
 import { ProjectsPage } from "./components/pages/ProjectsPage";
+import { CreateProjectPage } from "./components/pages/CreateProjectPage";
 import { GroupsPage } from "./components/pages/GroupsPage";
 import SubmissionsPage from "./components/pages/SubmissionsPage";
 import EvaluationsPage from "./components/pages/EvaluationsPage";
@@ -29,6 +30,7 @@ function App() {
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="projects" element={<ProjectsPage />} />
+        <Route path="projects/create" element={<CreateProjectPage />} />
         <Route path="groups" element={<GroupsPage />} />
         <Route path="submissions" element={<SubmissionsPage />} />
         <Route path="evaluations" element={<EvaluationsPage />} />

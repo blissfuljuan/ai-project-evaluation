@@ -1,4 +1,4 @@
-package com.blissfuljuan.aiprojectevaluation.service.service;
+package com.blissfuljuan.aiprojectevaluation.service.project;
 
 import com.blissfuljuan.aiprojectevaluation.common.mapper.ProjectMapper;
 import com.blissfuljuan.aiprojectevaluation.dto.project.ProjectRequest;
@@ -9,7 +9,9 @@ import com.blissfuljuan.aiprojectevaluation.exception.ResourceNotFoundException;
 import com.blissfuljuan.aiprojectevaluation.model.CourseClass;
 import com.blissfuljuan.aiprojectevaluation.model.Project;
 import com.blissfuljuan.aiprojectevaluation.model.User;
+import com.blissfuljuan.aiprojectevaluation.model.enumtype.MembershipStatus;
 import com.blissfuljuan.aiprojectevaluation.model.enumtype.Role;
+import com.blissfuljuan.aiprojectevaluation.repository.ClassMemberRepository;
 import com.blissfuljuan.aiprojectevaluation.repository.CourseClassRepository;
 import com.blissfuljuan.aiprojectevaluation.repository.ProjectRepository;
 import com.blissfuljuan.aiprojectevaluation.repository.UserRepository;
@@ -21,18 +23,21 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class ProjectServiceImpl implements ProjectService{
+public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final ClassMemberRepository classMemberRepository;
     private final CourseClassRepository courseClassRepository;
     private final UserRepository userRepository;
     private final ProjectMapper projectMapper;
 
     public ProjectServiceImpl(ProjectRepository projectRepository,
+                              ClassMemberRepository classMemberRepository,
                               CourseClassRepository courseClassRepository,
                               UserRepository userRepository,
                               ProjectMapper projectMapper) {
         this.projectRepository = projectRepository;
+        this.classMemberRepository = classMemberRepository;
         this.courseClassRepository = courseClassRepository;
         this.userRepository = userRepository;
         this.projectMapper = projectMapper;
@@ -44,6 +49,7 @@ public class ProjectServiceImpl implements ProjectService{
 
         User user = findUserById(userId);
         CourseClass courseClass = findCourseClassById(request.getCourseClassId());
+        validateEnrollment(courseClass.getId(), userId);
         boolean exists = projectRepository.existsByCourseClassIdAndTitleIgnoreCase(
                 courseClass.getId(),
                 request.getTitle().trim()
@@ -106,6 +112,7 @@ public class ProjectServiceImpl implements ProjectService{
 
         CourseClass courseClass = courseClassRepository.findById(request.getCourseClassId())
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + request.getCourseClassId()));
+        validateEnrollment(courseClass.getId(), userId);
 
         project.setTitle(request.getTitle());
         project.setDescription(request.getDescription());
@@ -161,6 +168,18 @@ public class ProjectServiceImpl implements ProjectService{
 
         if(!isOwner && !isAdmin) {
             throw new ForbiddenException("You are not allowed to modify this project");
+        }
+    }
+
+    private void validateEnrollment(Long classId, Long userId) {
+        boolean enrolled = classMemberRepository.existsByCourseClassIdAndUserIdAndStatus(
+                classId,
+                userId,
+                MembershipStatus.ACTIVE
+        );
+
+        if (!enrolled) {
+            throw new ForbiddenException("You must be actively enrolled in this class to create or update a project");
         }
     }
 }
