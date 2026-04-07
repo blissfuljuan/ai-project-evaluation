@@ -10,7 +10,7 @@ public class ProjectRequest {
     @Size(max = 150, message = "Title must not exceed 150 characters")
     private String title;
 
-    @Size(max = 500, message = "Description must not exceed 5000 characters")
+    @Size(max = 5000, message = "Description must not exceed 5000 characters")
     private String description;
 
     @NotNull(message = "Course class id is required")
