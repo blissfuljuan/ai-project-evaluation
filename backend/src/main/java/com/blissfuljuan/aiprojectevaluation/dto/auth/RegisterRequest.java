@@ -8,11 +8,11 @@ public class RegisterRequest {
 
     @NotBlank(message = "First name is required")
     @Size(max = 100, message = "First name must not exceed 100 characters")
-    private String firstName;
+    private String firstname;
 
     @NotBlank(message = "Last name is required")
     @Size(max = 100, message = "Last name must not exceed 100 characters")
-    private String lastName;
+    private String lastname;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
@@ -25,20 +25,20 @@ public class RegisterRequest {
     public RegisterRequest() {
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getLastname() {
+        return lastname;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 
     public String getEmail() {
