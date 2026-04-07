@@ -1,4 +1,4 @@
-package com.blissfuljuan.aiprojectevaluation.service.service;
+package com.blissfuljuan.aiprojectevaluation.service.project;
 
 import com.blissfuljuan.aiprojectevaluation.dto.project.ProjectRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.project.ProjectResponse;

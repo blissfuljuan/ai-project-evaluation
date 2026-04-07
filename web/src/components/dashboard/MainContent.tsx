@@ -1,6 +1,7 @@
-import type { Page } from "./DashboardLayout";
 import { DashboardPage } from "../pages/DashboardPage";
 import { ProfilePage } from "./../pages/ProfilePage";
+
+type Page = "dashboard" | "profile";
 
 interface MainContentProps {
   page: Page;
