@@ -10,6 +10,8 @@ public class RegisterRequest {
     @Size(max = 100, message = "First name must not exceed 100 characters")
     private String firstname;
 
+    private String middlename;
+
     @NotBlank(message = "Last name is required")
     @Size(max = 100, message = "Last name must not exceed 100 characters")
     private String lastname;
@@ -31,6 +33,14 @@ public class RegisterRequest {
 
     public void setFirstname(String firstname) {
         this.firstname = firstname;
+    }
+
+    public String getMiddlename() {
+        return middlename;
+    }
+
+    public void setMiddlename(String middlename) {
+        this.middlename = middlename;
     }
 
     public String getLastname() {

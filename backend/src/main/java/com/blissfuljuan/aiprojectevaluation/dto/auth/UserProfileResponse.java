@@ -4,8 +4,9 @@ import com.blissfuljuan.aiprojectevaluation.model.User;
 
 public class UserProfileResponse {
     private Long id;
-    private String firstName;
-    private String lastName;
+    private String firstname;
+    private String middlename;
+    private String lastname;
     private String email;
     private String role;
 
@@ -15,8 +16,9 @@ public class UserProfileResponse {
     public static UserProfileResponse fromEntity(User user) {
         UserProfileResponse response = new UserProfileResponse();
         response.setId(user.getId());
-        response.setFirstName(user.getFirstname());
-        response.setLastName(user.getLastName());
+        response.setFirstname(user.getFirstname());
+        response.setMiddlename(user.getMiddlename());
+        response.setLastname(user.getLastname());
         response.setEmail(user.getEmail());
         response.setRole(user.getRole().name());
         return response;
@@ -30,20 +32,28 @@ public class UserProfileResponse {
         this.id = id;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getFirstname() {
+        return firstname;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getMiddlename() {
+        return middlename;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    public void setMiddlename(String middlename) {
+        this.middlename = middlename;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = lastname;
     }
 
     public String getEmail() {
