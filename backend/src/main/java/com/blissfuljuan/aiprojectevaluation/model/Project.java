@@ -26,6 +26,10 @@ public class Project extends BaseEntity {
     @JoinColumn(name = "class_id", nullable = false)
     private CourseClass courseClass;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "created_by", nullable = false)
+    private User createdBy;
+
     public Project() {
     }
 
@@ -65,5 +69,13 @@ public class Project extends BaseEntity {
 
     public void setCourseClass(CourseClass courseClass) {
         this.courseClass = courseClass;
+    }
+
+    public User getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(User createdBy) {
+        this.createdBy = createdBy;
     }
 }

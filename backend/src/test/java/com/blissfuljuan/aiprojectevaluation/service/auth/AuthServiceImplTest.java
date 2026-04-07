@@ -51,8 +51,8 @@ public class AuthServiceImplTest {
     @BeforeEach
     void setup() {
         registerRequest = new RegisterRequest();
-        registerRequest.setFirstName("Eric");
-        registerRequest.setLastName("Revilleza");
+        registerRequest.setFirstname("Eric");
+        registerRequest.setLastname("Revilleza");
         registerRequest.setEmail("eric@email.com");
         registerRequest.setPassword("Password123");
 

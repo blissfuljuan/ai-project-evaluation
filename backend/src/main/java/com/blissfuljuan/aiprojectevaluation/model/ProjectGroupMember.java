@@ -8,7 +8,7 @@ import jakarta.persistence.*;
         name = "project_group_members",
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = {"project_group_id", "user_id"}),
-                @UniqueConstraint(columnNames = {"class_id", "user_ud"})
+                @UniqueConstraint(columnNames = {"class_id", "user_id"})
         },
         indexes = {
                 @Index(name = "idx_project_group_members_group", columnList = "project_group_id"),
