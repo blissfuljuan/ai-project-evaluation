@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface ClassCardProps {
   courseClass: CourseClass;
   deleting?: boolean;
-  onEdit: (courseClass: CourseClass) => void;
-  onDelete: (courseClass: CourseClass) => Promise<void>;
+  onEdit?: (courseClass: CourseClass) => void;
+  onDelete?: (courseClass: CourseClass) => Promise<void>;
 }
 
 export function ClassCard({
@@ -27,18 +27,24 @@ export function ClassCard({
           </div>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-        <Button variant="outline" onClick={() => onEdit(courseClass)}>
-          Edit
-        </Button>
-        <Button
-          variant="destructive"
-          disabled={deleting}
-          onClick={() => void onDelete(courseClass)}
-        >
-          {deleting ? "Deleting..." : "Delete"}
-        </Button>
-      </CardContent>
+      {(onEdit || onDelete) && (
+        <CardContent className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          {onEdit && (
+            <Button variant="outline" onClick={() => onEdit(courseClass)}>
+              Edit
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="destructive"
+              disabled={deleting}
+              onClick={() => void onDelete(courseClass)}
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          )}
+        </CardContent>
+      )}
     </Card>
   );
 }

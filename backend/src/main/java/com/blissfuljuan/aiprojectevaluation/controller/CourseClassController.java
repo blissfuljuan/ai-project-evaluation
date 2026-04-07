@@ -1,5 +1,6 @@
 package com.blissfuljuan.aiprojectevaluation.controller;
 
+import com.blissfuljuan.aiprojectevaluation.dto.courseclass.ClassEnrollmentRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassResponse;
 import com.blissfuljuan.aiprojectevaluation.security.service.CustomUserDetails;
@@ -34,6 +35,15 @@ public class CourseClassController {
             @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return ResponseEntity.ok(courseClassService.getClassesByUser(currentUser.getUserId()));
+    }
+
+    @PostMapping("/enroll")
+    public ResponseEntity<CourseClassResponse> enrollInClass(
+            @Valid @RequestBody ClassEnrollmentRequest request,
+            @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        CourseClassResponse response = courseClassService.enrollInClass(request, currentUser.getUserId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/teaching")

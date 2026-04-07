@@ -1,10 +1,12 @@
 package com.blissfuljuan.aiprojectevaluation.service.courseclass;
 
+import com.blissfuljuan.aiprojectevaluation.dto.courseclass.ClassEnrollmentRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassResponse;
 import com.blissfuljuan.aiprojectevaluation.exception.BadRequestException;
 import com.blissfuljuan.aiprojectevaluation.exception.ForbiddenException;
 import com.blissfuljuan.aiprojectevaluation.exception.ResourceNotFoundException;
+import com.blissfuljuan.aiprojectevaluation.model.ClassMember;
 import com.blissfuljuan.aiprojectevaluation.model.CourseClass;
 import com.blissfuljuan.aiprojectevaluation.model.User;
 import com.blissfuljuan.aiprojectevaluation.model.enumtype.MembershipStatus;
@@ -97,6 +99,32 @@ public class CourseClassServiceImpl implements CourseClassService {
         validateTeacherRole(instructorId);
         CourseClass courseClass = findOwnedClass(classId, instructorId);
         courseClassRepository.delete(courseClass);
+    }
+
+    @Override
+    @Transactional
+    public CourseClassResponse enrollInClass(ClassEnrollmentRequest request, Long userId) {
+        if (request == null || request.getClassCode() == null || request.getClassCode().trim().isEmpty()) {
+            throw new BadRequestException("Class code is required");
+        }
+
+        User user = findUserById(userId);
+        if (user.getRole() != Role.STUDENT && user.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Only students and administrators can enroll in a class");
+        }
+
+        CourseClass courseClass = courseClassRepository.findByClassCodeIgnoreCase(request.getClassCode().trim())
+                .orElseThrow(() -> new ResourceNotFoundException("Class not found for code: " + request.getClassCode().trim()));
+
+        ClassMember classMember = classMemberRepository.findByCourseClassIdAndUserId(courseClass.getId(), userId)
+                .orElseGet(() -> new ClassMember(courseClass, user, MembershipStatus.ACTIVE));
+
+        classMember.setCourseClass(courseClass);
+        classMember.setUser(user);
+        classMember.setStatus(MembershipStatus.ACTIVE);
+
+        classMemberRepository.save(classMember);
+        return toResponse(courseClass);
     }
 
     private CourseClass findOwnedClass(Long classId, Long instructorId) {
