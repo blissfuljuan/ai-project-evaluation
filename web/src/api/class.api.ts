@@ -1,5 +1,9 @@
 import { http } from "./http";
-import type { CourseClass, CourseClassRequest } from "@/types/course-class";
+import type {
+  ClassEnrollmentRequest,
+  CourseClass,
+  CourseClassRequest,
+} from "@/types/course-class";
 
 export const classApi = {
   async listMine(): Promise<CourseClass[]> {
@@ -24,5 +28,10 @@ export const classApi = {
 
   async remove(id: number): Promise<void> {
     await http.delete(`/api/classes/${id}`);
+  },
+
+  async enroll(payload: ClassEnrollmentRequest): Promise<CourseClass> {
+    const { data } = await http.post<CourseClass>("/api/classes/enroll", payload);
+    return data;
   },
 };

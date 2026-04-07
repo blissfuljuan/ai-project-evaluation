@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { classApi } from "@/api/class.api";
 import { ClassCard } from "@/components/classes/ClassCard";
+import { ClassEnrollmentForm } from "@/components/classes/ClassEnrollmentForm";
 import { ClassForm } from "@/components/classes/ClassForm";
 import { Separator } from "@/components/ui/separator";
 import { useUser } from "@/context/UserContext";
@@ -19,7 +20,10 @@ export function ClassesPage() {
   useEffect(() => {
     const loadClasses = async () => {
       try {
-        const data = await classApi.listTeaching();
+        const data =
+          user?.role === "STUDENT"
+            ? await classApi.listMine()
+            : await classApi.listTeaching();
         setClasses(data);
       } catch (err: any) {
         const msg =
@@ -31,7 +35,7 @@ export function ClassesPage() {
     };
 
     loadClasses();
-  }, []);
+  }, [user?.role]);
 
   const handleCreate = async (payload: CourseClassRequest) => {
     setSaving(true);
@@ -78,6 +82,58 @@ export function ClassesPage() {
   };
 
   const isTeacherView = user?.role === "INSTRUCTOR" || user?.role === "ADMIN";
+  const isStudentView = user?.role === "STUDENT";
+
+  if (isStudentView) {
+    return (
+      <div className="space-y-6">
+        <section className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight">Classes</h1>
+          <p className="text-muted-foreground">
+            Enroll in a class using a valid class code and manage your active classes.
+          </p>
+        </section>
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        <ClassEnrollmentForm
+          onEnrolled={(courseClass) => {
+            setClasses((current) => {
+              if (current.some((item) => item.id === courseClass.id)) {
+                return current;
+              }
+              return [courseClass, ...current];
+            });
+          }}
+        />
+
+        <Separator />
+
+        <section className="space-y-4">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold">Enrolled Classes</h2>
+            <p className="text-sm text-muted-foreground">
+              These are the classes you can now use for project work.
+            </p>
+          </div>
+
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Loading classes...</p>
+          ) : classes.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              You are not enrolled in any class yet.
+            </p>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-2">
+              {classes.map((courseClass) => (
+                <ClassCard key={courseClass.id} courseClass={courseClass} />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    );
+  }
 
   if (!isTeacherView) {
     return (

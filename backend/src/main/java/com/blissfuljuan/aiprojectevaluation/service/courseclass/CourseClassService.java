@@ -1,5 +1,6 @@
 package com.blissfuljuan.aiprojectevaluation.service.courseclass;
 
+import com.blissfuljuan.aiprojectevaluation.dto.courseclass.ClassEnrollmentRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassResponse;
 
@@ -11,4 +12,5 @@ public interface CourseClassService {
     CourseClassResponse createClass(CourseClassRequest request, Long instructorId);
     CourseClassResponse updateClass(Long classId, CourseClassRequest request, Long instructorId);
     void deleteClass(Long classId, Long instructorId);
+    CourseClassResponse enrollInClass(ClassEnrollmentRequest request, Long userId);
 }
