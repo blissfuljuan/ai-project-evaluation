@@ -17,6 +17,7 @@ export function Sidebar() {
     <aside className="flex w-64 flex-col border-r bg-background p-4">
       <nav className="space-y-1">
         <SidebarLink to="/app/dashboard">Dashboard</SidebarLink>
+        <SidebarLink to="/app/classes">Classes</SidebarLink>
         <SidebarLink to="/app/projects">Projects</SidebarLink>
         <SidebarLink to="/app/groups">Groups</SidebarLink>
         <SidebarLink to="/app/submissions">Submissions</SidebarLink>
