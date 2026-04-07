@@ -4,4 +4,5 @@ export type UserResponse = {
     lastname: string;
     middlename: string;
     email: string;
+    role: string;
 }

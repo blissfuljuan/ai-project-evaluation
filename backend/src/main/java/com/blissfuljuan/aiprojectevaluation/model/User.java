@@ -18,8 +18,11 @@ public class User extends BaseEntity {
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstname;
 
+    @Column(name = "middle_name", length = 100)
+    private String middlename;
+
     @Column(name = "last_name", nullable = false, length = 100)
-    private String lastName;
+    private String lastname;
 
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
@@ -37,9 +40,18 @@ public class User extends BaseEntity {
     public User() {
     }
 
-    public User(String firstname, String lastName, String email, String password, Role role) {
+    public User(String firstname, String lastname, String email, String password, Role role) {
         this.firstname = firstname;
-        this.lastName = lastName;
+        this.lastname = lastname;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
+    public User(String firstname, String middlename, String lastname, String email, String password, Role role) {
+        this.firstname = firstname;
+        this.middlename = middlename;
+        this.lastname = lastname;
         this.email = email;
         this.password = password;
         this.role = role;
@@ -61,12 +73,20 @@ public class User extends BaseEntity {
         this.firstname = normalize(firstname);
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getMiddlename() {
+        return middlename;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = normalize(lastName);
+    public void setMiddlename(String middlename) {
+        this.middlename = middlename;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname = normalize(lastname);
     }
 
     public String getEmail() {

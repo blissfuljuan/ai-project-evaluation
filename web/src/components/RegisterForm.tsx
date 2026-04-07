@@ -27,7 +27,7 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false);
 
   const passwordsMatch = password === confirmPassword;
-  const canSubmit = acceptedTerms && passwordsMatch && password.length > 8;
+  const canSubmit = acceptedTerms && passwordsMatch && password.length >= 8;
 
   const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
