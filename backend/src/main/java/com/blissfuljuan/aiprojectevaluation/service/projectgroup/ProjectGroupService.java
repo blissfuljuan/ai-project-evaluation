@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface ProjectGroupService {
     List<ProjectGroupResponse> getMyGroups(Long userId);
+    List<ProjectGroupResponse> getGroupsByInstructor(Long instructorId);
     ProjectGroupResponse createGroup(ProjectGroupRequest request, Long userId);
     ProjectGroupResponse updateGroup(Long groupId, ProjectGroupUpdateRequest request, Long userId);
     ProjectGroupResponse addMember(Long groupId, ProjectGroupMemberRequest request, Long userId);

@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ProjectGroupRepository extends JpaRepository<ProjectGroup, Long> {
     List<ProjectGroup> findByCourseClassId(Long classId);
+    List<ProjectGroup> findByCourseClassInstructorIdOrderByCourseClassTitleAscGroupNameAsc(Long instructorId);
     boolean existsByCourseClassIdAndGroupNameIgnoreCase(Long classId, String groupName);
 }

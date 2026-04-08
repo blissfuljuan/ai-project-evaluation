@@ -6,6 +6,7 @@ import { CreateGroupForm } from "@/components/groups/CreateGroupForm";
 import { GroupCard } from "@/components/groups/GroupCard";
 import { GroupDetailsCard } from "@/components/groups/GroupDetailsCard";
 import { GroupMembersTable } from "@/components/groups/GroupMembersTable";
+import { TeacherGroupsTable } from "@/components/groups/TeacherGroupsTable";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,6 +35,7 @@ type GroupsPageData = {
 };
 
 let groupsPageDataRequest: Promise<GroupsPageData> | null = null;
+let teacherGroupsRequest: Promise<Group[]> | null = null;
 
 function loadGroupsPageData() {
   if (!groupsPageDataRequest) {
@@ -48,6 +50,16 @@ function loadGroupsPageData() {
   }
 
   return groupsPageDataRequest;
+}
+
+function loadTeacherGroups() {
+  if (!teacherGroupsRequest) {
+    teacherGroupsRequest = groupApi.listTeaching().finally(() => {
+      teacherGroupsRequest = null;
+    });
+  }
+
+  return teacherGroupsRequest;
 }
 
 export function GroupsPage() {
@@ -69,6 +81,13 @@ export function GroupsPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
+        if (user?.role === "INSTRUCTOR") {
+          const groupData = await loadTeacherGroups();
+          setGroups(groupData);
+          setClasses([]);
+          return;
+        }
+
         const { classData, groupData } = await loadGroupsPageData();
         setClasses(classData);
         setGroups(groupData);
@@ -82,8 +101,9 @@ export function GroupsPage() {
     };
 
     void loadData();
-  }, []);
+  }, [user?.role]);
 
+  const isTeacherView = user?.role === "INSTRUCTOR";
   const isStudentView = user?.role === "STUDENT" || user?.role === "ADMIN";
   const isSelectedGroupLeader =
     !!selectedGroup &&
@@ -191,12 +211,50 @@ export function GroupsPage() {
     }
   };
 
+  if (isTeacherView) {
+    return (
+      <div className="space-y-6">
+        <section className="space-y-1 text-left">
+          <h1 className="text-3xl font-bold tracking-tight">Groups</h1>
+          <p className="text-muted-foreground">
+            Review all groups created under the classes you handle.
+          </p>
+        </section>
+
+        {error && <p className="text-sm text-destructive">{error}</p>}
+
+        {selectedGroup ? (
+          <section className="space-y-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="space-y-1 text-left">
+                <h2 className="text-xl font-semibold">{selectedGroup.groupName}</h2>
+                <p className="text-sm text-muted-foreground">
+                  View the selected group's details and members.
+                </p>
+              </div>
+              <Button variant="outline" onClick={() => setSelectedGroup(null)}>
+                Back To Group List
+              </Button>
+            </div>
+
+            <GroupDetailsCard group={selectedGroup} />
+            <GroupMembersTable group={selectedGroup} />
+          </section>
+        ) : loading ? (
+          <p className="text-sm text-muted-foreground">Loading groups...</p>
+        ) : (
+          <TeacherGroupsTable groups={groups} onViewDetails={setSelectedGroup} />
+        )}
+      </div>
+    );
+  }
+
   if (!isStudentView) {
     return (
       <div className="space-y-3">
         <h1 className="text-3xl font-bold tracking-tight">Groups</h1>
         <p className="text-sm text-muted-foreground">
-          Group formation is currently available to students only.
+          Group management is unavailable for this account.
         </p>
       </div>
     );
