@@ -11,7 +11,8 @@ public class ProjectGroupResponse {
     private Long courseClassId;
     private String courseClassCode;
     private String courseClassTitle;
-    private List<UserSummaryResponse> members;
+    private UserSummaryResponse groupLeader;
+    private List<ProjectGroupMemberResponse> members;
 
     public Long getId() {
         return id;
@@ -53,11 +54,19 @@ public class ProjectGroupResponse {
         this.courseClassTitle = courseClassTitle;
     }
 
-    public List<UserSummaryResponse> getMembers() {
+    public UserSummaryResponse getGroupLeader() {
+        return groupLeader;
+    }
+
+    public void setGroupLeader(UserSummaryResponse groupLeader) {
+        this.groupLeader = groupLeader;
+    }
+
+    public List<ProjectGroupMemberResponse> getMembers() {
         return members;
     }
 
-    public void setMembers(List<UserSummaryResponse> members) {
+    public void setMembers(List<ProjectGroupMemberResponse> members) {
         this.members = members;
     }
 }

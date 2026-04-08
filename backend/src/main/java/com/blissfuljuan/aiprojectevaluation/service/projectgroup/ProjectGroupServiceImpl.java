@@ -1,8 +1,11 @@
 package com.blissfuljuan.aiprojectevaluation.service.projectgroup;
 
 import com.blissfuljuan.aiprojectevaluation.dto.projectgroup.ProjectGroupMemberRequest;
+import com.blissfuljuan.aiprojectevaluation.dto.projectgroup.ProjectGroupMemberResponse;
+import com.blissfuljuan.aiprojectevaluation.dto.projectgroup.ProjectGroupMemberRoleUpdateRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.projectgroup.ProjectGroupRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.projectgroup.ProjectGroupResponse;
+import com.blissfuljuan.aiprojectevaluation.dto.projectgroup.ProjectGroupUpdateRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.user.UserSummaryResponse;
 import com.blissfuljuan.aiprojectevaluation.exception.BadRequestException;
 import com.blissfuljuan.aiprojectevaluation.exception.ForbiddenException;
@@ -13,6 +16,7 @@ import com.blissfuljuan.aiprojectevaluation.model.ProjectGroup;
 import com.blissfuljuan.aiprojectevaluation.model.ProjectGroupMember;
 import com.blissfuljuan.aiprojectevaluation.model.User;
 import com.blissfuljuan.aiprojectevaluation.model.enumtype.MembershipStatus;
+import com.blissfuljuan.aiprojectevaluation.model.enumtype.ProjectGroupMemberRole;
 import com.blissfuljuan.aiprojectevaluation.model.enumtype.Role;
 import com.blissfuljuan.aiprojectevaluation.repository.ClassMemberRepository;
 import com.blissfuljuan.aiprojectevaluation.repository.CourseClassRepository;
@@ -69,31 +73,43 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
 
         CourseClass courseClass = findCourseClassById(request.getCourseClassId());
         validateActiveEnrollment(courseClass.getId(), userId);
-
-        if (projectGroupMemberRepository.existsByCourseClassIdAndUserId(courseClass.getId(), userId)) {
-            throw new BadRequestException("You are already assigned to a group in this class");
-        }
-
-        if (projectGroupRepository.existsByCourseClassIdAndGroupNameIgnoreCase(courseClass.getId(), request.getGroupName().trim())) {
-            throw new BadRequestException("A group with the same name already exists in this class");
-        }
+        validateUserHasNoGroupInClass(courseClass.getId(), userId);
+        validateUniqueGroupName(courseClass.getId(), request.getGroupName().trim(), null);
 
         ProjectGroup projectGroup = new ProjectGroup();
         projectGroup.setGroupName(request.getGroupName().trim());
         projectGroup.setCourseClass(courseClass);
         ProjectGroup savedGroup = projectGroupRepository.save(projectGroup);
 
-        Set<Long> memberIds = new LinkedHashSet<>();
-        memberIds.add(userId);
-        if (request.getMemberUserIds() != null) {
-          memberIds.addAll(request.getMemberUserIds());
-        }
-
+        Set<Long> memberIds = buildMemberIds(userId, request.getMemberUserIds());
+        boolean leaderAssigned = false;
         for (Long memberId : memberIds) {
-            addMemberInternal(savedGroup, memberId);
+            addMemberInternal(
+                    savedGroup,
+                    memberId,
+                    leaderAssigned ? ProjectGroupMemberRole.MEMBER : ProjectGroupMemberRole.LEADER
+            );
+            leaderAssigned = true;
         }
 
         return toResponse(savedGroup);
+    }
+
+    @Override
+    public ProjectGroupResponse updateGroup(Long groupId, ProjectGroupUpdateRequest request, Long userId) {
+        validateStudentRole(userId);
+        String normalizedGroupName = normalizeGroupName(request);
+
+        ProjectGroup projectGroup = findGroupById(groupId);
+        validateLeader(groupId, userId);
+        validateUniqueGroupName(
+                projectGroup.getCourseClass().getId(),
+                normalizedGroupName,
+                projectGroup
+        );
+
+        projectGroup.setGroupName(normalizedGroupName);
+        return toResponse(projectGroupRepository.save(projectGroup));
     }
 
     @Override
@@ -104,15 +120,72 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
         }
 
         ProjectGroup projectGroup = findGroupById(groupId);
-        if (!projectGroupMemberRepository.existsByProjectGroupIdAndUserId(groupId, userId)) {
-            throw new ForbiddenException("You must be a member of this group to add another member");
-        }
+        validateLeader(groupId, userId);
 
-        addMemberInternal(projectGroup, request.getUserId());
+        addMemberInternal(projectGroup, request.getUserId(), ProjectGroupMemberRole.MEMBER);
         return toResponse(projectGroup);
     }
 
-    private void addMemberInternal(ProjectGroup projectGroup, Long memberUserId) {
+    @Override
+    public ProjectGroupResponse updateMemberRole(
+            Long groupId,
+            Long memberUserId,
+            ProjectGroupMemberRoleUpdateRequest request,
+            Long userId
+    ) {
+        validateStudentRole(userId);
+        if (request == null || request.getRole() == null) {
+            throw new BadRequestException("Member role is required");
+        }
+
+        ProjectGroup projectGroup = findGroupById(groupId);
+        validateLeader(groupId, userId);
+
+        ProjectGroupMember targetMember = findGroupMember(groupId, memberUserId);
+        ProjectGroupMember currentLeader = findLeaderMember(groupId);
+        ProjectGroupMemberRole targetRole = request.getRole();
+
+        if (targetMember.getRole() == targetRole) {
+            return toResponse(projectGroup);
+        }
+
+        if (targetRole == ProjectGroupMemberRole.LEADER) {
+            currentLeader.setRole(ProjectGroupMemberRole.MEMBER);
+            targetMember.setRole(ProjectGroupMemberRole.LEADER);
+            projectGroupMemberRepository.save(currentLeader);
+            projectGroupMemberRepository.save(targetMember);
+            return toResponse(projectGroup);
+        }
+
+        if (targetMember.getRole() == ProjectGroupMemberRole.LEADER) {
+            throw new BadRequestException("Assign another leader before changing the current leader's role");
+        }
+
+        targetMember.setRole(ProjectGroupMemberRole.MEMBER);
+        projectGroupMemberRepository.save(targetMember);
+        return toResponse(projectGroup);
+    }
+
+    @Override
+    public ProjectGroupResponse removeMember(Long groupId, Long memberUserId, Long userId) {
+        validateStudentRole(userId);
+        ProjectGroup projectGroup = findGroupById(groupId);
+        validateLeader(groupId, userId);
+
+        ProjectGroupMember targetMember = findGroupMember(groupId, memberUserId);
+        if (targetMember.getRole() == ProjectGroupMemberRole.LEADER) {
+            throw new BadRequestException("The current leader cannot be removed");
+        }
+
+        projectGroupMemberRepository.delete(targetMember);
+        return toResponse(projectGroup);
+    }
+
+    private void addMemberInternal(
+            ProjectGroup projectGroup,
+            Long memberUserId,
+            ProjectGroupMemberRole memberRole
+    ) {
         Long classId = projectGroup.getCourseClass().getId();
         validateActiveEnrollment(classId, memberUserId);
 
@@ -120,13 +193,11 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
             throw new BadRequestException("User is already a member of this group");
         }
 
-        if (projectGroupMemberRepository.existsByCourseClassIdAndUserId(classId, memberUserId)) {
-            throw new BadRequestException("User is already assigned to another group in this class");
-        }
+        validateUserHasNoGroupInClass(classId, memberUserId);
 
         User member = findUserById(memberUserId);
         ProjectGroupMember projectGroupMember =
-                new ProjectGroupMember(projectGroup, projectGroup.getCourseClass(), member);
+                new ProjectGroupMember(projectGroup, projectGroup.getCourseClass(), member, memberRole);
         projectGroupMemberRepository.save(projectGroupMember);
     }
 
@@ -148,6 +219,51 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
         User user = findUserById(userId);
         if (user.getRole() != Role.STUDENT && user.getRole() != Role.ADMIN) {
             throw new ForbiddenException("Only students and administrators can manage student groups");
+        }
+    }
+
+    private Set<Long> buildMemberIds(Long leaderUserId, List<Long> memberUserIds) {
+        Set<Long> memberIds = new LinkedHashSet<>();
+        memberIds.add(leaderUserId);
+
+        if (memberUserIds != null) {
+            memberIds.addAll(memberUserIds);
+        }
+
+        return memberIds;
+    }
+
+    private String normalizeGroupName(ProjectGroupUpdateRequest request) {
+        if (request == null || request.getGroupName() == null || request.getGroupName().trim().isEmpty()) {
+            throw new BadRequestException("Group name is required");
+        }
+
+        return request.getGroupName().trim();
+    }
+
+    private void validateUniqueGroupName(Long classId, String groupName, ProjectGroup currentGroup) {
+        if (!projectGroupRepository.existsByCourseClassIdAndGroupNameIgnoreCase(classId, groupName)) {
+            return;
+        }
+
+        if (currentGroup != null && currentGroup.getGroupName().equalsIgnoreCase(groupName)) {
+            return;
+        }
+
+        throw new BadRequestException("A group with the same name already exists in this class");
+    }
+
+    private void validateUserHasNoGroupInClass(Long classId, Long userId) {
+        if (projectGroupMemberRepository.existsByCourseClassIdAndUserId(classId, userId)) {
+            throw new BadRequestException("User is already assigned to a group in this class");
+        }
+    }
+
+    private void validateLeader(Long groupId, Long userId) {
+        ProjectGroupMember projectGroupMember = findGroupMember(groupId, userId);
+
+        if (projectGroupMember.getRole() != ProjectGroupMemberRole.LEADER) {
+            throw new ForbiddenException("Only the group leader can perform this action");
         }
     }
 
@@ -175,6 +291,16 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
     }
 
+    private ProjectGroupMember findGroupMember(Long groupId, Long userId) {
+        return projectGroupMemberRepository.findByProjectGroupIdAndUserId(groupId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group member not found"));
+    }
+
+    private ProjectGroupMember findLeaderMember(Long groupId) {
+        return projectGroupMemberRepository.findFirstByProjectGroupIdAndRole(groupId, ProjectGroupMemberRole.LEADER)
+                .orElseThrow(() -> new ResourceNotFoundException("Group leader not found"));
+    }
+
     private ProjectGroupResponse toResponse(ProjectGroup projectGroup) {
         ProjectGroupResponse response = new ProjectGroupResponse();
         response.setId(projectGroup.getId());
@@ -182,13 +308,22 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
         response.setCourseClassId(projectGroup.getCourseClass().getId());
         response.setCourseClassCode(projectGroup.getCourseClass().getClassCode());
         response.setCourseClassTitle(projectGroup.getCourseClass().getTitle());
-        response.setMembers(
-                projectGroupMemberRepository.findByProjectGroupId(projectGroup.getId())
-                        .stream()
-                        .map(ProjectGroupMember::getUser)
-                        .map(UserSummaryResponse::fromEntity)
-                        .collect(Collectors.toList())
-        );
+        response.setGroupLeader(findGroupLeader(projectGroup.getId()));
+        response.setMembers(findGroupMembers(projectGroup.getId()));
         return response;
+    }
+
+    private UserSummaryResponse findGroupLeader(Long groupId) {
+        return projectGroupMemberRepository.findFirstByProjectGroupIdAndRole(groupId, ProjectGroupMemberRole.LEADER)
+                .map(ProjectGroupMember::getUser)
+                .map(UserSummaryResponse::fromEntity)
+                .orElse(null);
+    }
+
+    private List<ProjectGroupMemberResponse> findGroupMembers(Long groupId) {
+        return projectGroupMemberRepository.findByProjectGroupId(groupId)
+                .stream()
+                .map(ProjectGroupMemberResponse::fromEntity)
+                .collect(Collectors.toList());
     }
 }

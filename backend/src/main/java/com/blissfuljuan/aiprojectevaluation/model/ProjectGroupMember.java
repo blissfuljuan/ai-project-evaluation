@@ -1,6 +1,7 @@
 package com.blissfuljuan.aiprojectevaluation.model;
 
 import com.blissfuljuan.aiprojectevaluation.model.base.BaseEntity;
+import com.blissfuljuan.aiprojectevaluation.model.enumtype.ProjectGroupMemberRole;
 import jakarta.persistence.*;
 
 @Entity
@@ -34,13 +35,23 @@ public class ProjectGroupMember extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "member_role", nullable = false, length = 20)
+    private ProjectGroupMemberRole role = ProjectGroupMemberRole.MEMBER;
+
     public ProjectGroupMember() {
     }
 
-    public ProjectGroupMember(ProjectGroup projectGroup, CourseClass courseClass, User user) {
+    public ProjectGroupMember(
+            ProjectGroup projectGroup,
+            CourseClass courseClass,
+            User user,
+            ProjectGroupMemberRole role
+    ) {
         this.projectGroup = projectGroup;
         this.courseClass = courseClass;
         this.user = user;
+        this.role = role;
     }
 
     public Long getId() {
@@ -73,5 +84,13 @@ public class ProjectGroupMember extends BaseEntity {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public ProjectGroupMemberRole getRole() {
+        return role;
+    }
+
+    public void setRole(ProjectGroupMemberRole role) {
+        this.role = role;
     }
 }
