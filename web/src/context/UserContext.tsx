@@ -20,6 +20,7 @@ type UsertContextValue = {
 
   login: (payload: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
+  expireSession: (message?: string) => void;
   refreshUser: () => Promise<void>;
   clearError: () => void;
 };
@@ -48,7 +49,6 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
       const me = await userApi.me();
       setUser(me);
     } catch (err: any) {
-      tokenStore.clear();
       setUser(null);
       const msg =
         err?.response?.data?.message || "Session expired. Please login again.";
@@ -82,6 +82,13 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const expireSession = (message = "Session expired. Please login again.") => {
+    tokenStore.clear();
+    setUser(null);
+    setError(message);
+    setLoading(false);
+  };
+
   useEffect(() => {
     (async () => {
       setLoading(true);
@@ -98,6 +105,7 @@ export function UserContextProvider({ children }: { children: ReactNode }) {
       error,
       login,
       logout,
+      expireSession,
       refreshUser,
       clearError,
     }),

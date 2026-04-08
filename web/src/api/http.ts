@@ -1,4 +1,5 @@
 import { tokenStore } from "@/auth/token";
+import { notifySessionExpired } from "@/auth/session-expiry";
 import axios, { AxiosError } from "axios";
 
 const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -22,8 +23,18 @@ http.interceptors.request.use((config) => {
 http.interceptors.response.use(
     (res) => res,
     (err: AxiosError) => {
-        if(err.response?.status === 401) {
-            tokenStore.clear();
+        const status = err.response?.status;
+        const requestUrl = err.config?.url ?? "";
+        const hasToken = !!tokenStore.get();
+        const isAuthAction = requestUrl.includes("/api/auth/login")
+            || requestUrl.includes("/api/auth/register")
+            || requestUrl.includes("/api/auth/logout");
+
+        if(status === 401 && hasToken && !isAuthAction) {
+            const message =
+                (err.response?.data as { message?: string } | undefined)?.message
+                || "Session expired. Please log in again.";
+            notifySessionExpired(message);
         }
         return Promise.reject(err);
     }
