@@ -3,6 +3,7 @@ package com.blissfuljuan.aiprojectevaluation.service.courseclass;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.ClassEnrollmentRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassResponse;
+import com.blissfuljuan.aiprojectevaluation.dto.user.UserSummaryResponse;
 import com.blissfuljuan.aiprojectevaluation.exception.BadRequestException;
 import com.blissfuljuan.aiprojectevaluation.exception.ForbiddenException;
 import com.blissfuljuan.aiprojectevaluation.exception.ResourceNotFoundException;
@@ -13,6 +14,7 @@ import com.blissfuljuan.aiprojectevaluation.model.enumtype.MembershipStatus;
 import com.blissfuljuan.aiprojectevaluation.model.enumtype.Role;
 import com.blissfuljuan.aiprojectevaluation.repository.ClassMemberRepository;
 import com.blissfuljuan.aiprojectevaluation.repository.CourseClassRepository;
+import com.blissfuljuan.aiprojectevaluation.repository.ProjectGroupMemberRepository;
 import com.blissfuljuan.aiprojectevaluation.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,15 +28,18 @@ public class CourseClassServiceImpl implements CourseClassService {
 
     private final ClassMemberRepository classMemberRepository;
     private final CourseClassRepository courseClassRepository;
+    private final ProjectGroupMemberRepository projectGroupMemberRepository;
     private final UserRepository userRepository;
 
     public CourseClassServiceImpl(
             ClassMemberRepository classMemberRepository,
             CourseClassRepository courseClassRepository,
+            ProjectGroupMemberRepository projectGroupMemberRepository,
             UserRepository userRepository
     ) {
         this.classMemberRepository = classMemberRepository;
         this.courseClassRepository = courseClassRepository;
+        this.projectGroupMemberRepository = projectGroupMemberRepository;
         this.userRepository = userRepository;
     }
 
@@ -127,6 +132,19 @@ public class CourseClassServiceImpl implements CourseClassService {
         return toResponse(courseClass);
     }
 
+    @Override
+    public List<UserSummaryResponse> getEligibleGroupMembers(Long classId, Long userId) {
+        validateActiveEnrollment(classId, userId);
+
+        return classMemberRepository.findByCourseClassIdAndStatus(classId, MembershipStatus.ACTIVE)
+                .stream()
+                .map(ClassMember::getUser)
+                .filter(user -> !user.getId().equals(userId))
+                .filter(user -> !projectGroupMemberRepository.existsByCourseClassIdAndUserId(classId, user.getId()))
+                .map(UserSummaryResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     private CourseClass findOwnedClass(Long classId, Long instructorId) {
         return courseClassRepository.findByIdAndInstructorId(classId, instructorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + classId));
@@ -143,6 +161,15 @@ public class CourseClassServiceImpl implements CourseClassService {
             throw new ForbiddenException("Only instructors and administrators can manage classes");
         }
         return user;
+    }
+
+    private void validateActiveEnrollment(Long classId, Long userId) {
+        ClassMember classMember = classMemberRepository.findByCourseClassIdAndUserId(classId, userId)
+                .orElseThrow(() -> new ForbiddenException("You must be enrolled in this class"));
+
+        if (classMember.getStatus() != MembershipStatus.ACTIVE) {
+            throw new ForbiddenException("You must be actively enrolled in this class");
+        }
     }
 
     private void validateRequest(CourseClassRequest request) {
