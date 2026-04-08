@@ -42,4 +42,9 @@ export const classApi = {
     );
     return data;
   },
+
+  async listStudents(classId: number): Promise<UserSummary[]> {
+    const { data } = await http.get<UserSummary[]>(`/api/classes/${classId}/students`);
+    return data;
+  },
 };

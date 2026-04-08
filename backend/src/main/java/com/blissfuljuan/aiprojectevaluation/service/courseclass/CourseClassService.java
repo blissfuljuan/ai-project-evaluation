@@ -14,5 +14,6 @@ public interface CourseClassService {
     CourseClassResponse updateClass(Long classId, CourseClassRequest request, Long instructorId);
     void deleteClass(Long classId, Long instructorId);
     CourseClassResponse enrollInClass(ClassEnrollmentRequest request, Long userId);
+    List<UserSummaryResponse> getStudentsByOwnedClass(Long classId, Long instructorId);
     List<UserSummaryResponse> getEligibleGroupMembers(Long classId, Long userId);
 }
