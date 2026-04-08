@@ -7,6 +7,11 @@ export const groupApi = {
     return data;
   },
 
+  async listTeaching(): Promise<Group[]> {
+    const { data } = await http.get<Group[]>("/api/groups/teaching");
+    return data;
+  },
+
   async create(payload: CreateGroupRequest): Promise<Group> {
     const { data } = await http.post<Group>("/api/groups", payload);
     return data;

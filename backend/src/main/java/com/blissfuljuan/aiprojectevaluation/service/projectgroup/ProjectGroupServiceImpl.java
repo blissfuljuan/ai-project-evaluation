@@ -67,6 +67,17 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ProjectGroupResponse> getGroupsByInstructor(Long instructorId) {
+        validateTeacherRole(instructorId);
+
+        return projectGroupRepository.findByCourseClassInstructorIdOrderByCourseClassTitleAscGroupNameAsc(instructorId)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public ProjectGroupResponse createGroup(ProjectGroupRequest request, Long userId) {
         validateStudentRole(userId);
         validateRequest(request);
@@ -219,6 +230,13 @@ public class ProjectGroupServiceImpl implements ProjectGroupService {
         User user = findUserById(userId);
         if (user.getRole() != Role.STUDENT && user.getRole() != Role.ADMIN) {
             throw new ForbiddenException("Only students and administrators can manage student groups");
+        }
+    }
+
+    private void validateTeacherRole(Long userId) {
+        User user = findUserById(userId);
+        if (user.getRole() != Role.INSTRUCTOR && user.getRole() != Role.ADMIN) {
+            throw new ForbiddenException("Only instructors and administrators can view class groups");
         }
     }
 

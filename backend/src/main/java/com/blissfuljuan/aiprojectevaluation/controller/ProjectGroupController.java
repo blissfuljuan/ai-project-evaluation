@@ -39,6 +39,13 @@ public class ProjectGroupController {
         return ResponseEntity.ok(projectGroupService.getMyGroups(currentUser.getUserId()));
     }
 
+    @GetMapping("/teaching")
+    public ResponseEntity<List<ProjectGroupResponse>> getTeachingGroups(
+            @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        return ResponseEntity.ok(projectGroupService.getGroupsByInstructor(currentUser.getUserId()));
+    }
+
     @PostMapping
     public ResponseEntity<ProjectGroupResponse> createGroup(
             @Valid @RequestBody ProjectGroupRequest request,
