@@ -4,6 +4,7 @@ import type {
   CourseClass,
   CourseClassRequest,
 } from "@/types/course-class";
+import type { UserSummary } from "@/types/user";
 
 export const classApi = {
   async listMine(): Promise<CourseClass[]> {
@@ -32,6 +33,13 @@ export const classApi = {
 
   async enroll(payload: ClassEnrollmentRequest): Promise<CourseClass> {
     const { data } = await http.post<CourseClass>("/api/classes/enroll", payload);
+    return data;
+  },
+
+  async listEligibleGroupMembers(classId: number): Promise<UserSummary[]> {
+    const { data } = await http.get<UserSummary[]>(
+      `/api/classes/${classId}/eligible-group-members`
+    );
     return data;
   },
 };

@@ -6,3 +6,10 @@ export type UserResponse = {
     email: string;
     role: string;
 }
+
+export type UserSummary = {
+    id: number;
+    firstname: string;
+    lastname: string;
+    email: string;
+}

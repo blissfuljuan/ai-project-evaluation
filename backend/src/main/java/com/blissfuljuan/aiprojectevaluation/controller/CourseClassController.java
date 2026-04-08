@@ -3,6 +3,7 @@ package com.blissfuljuan.aiprojectevaluation.controller;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.ClassEnrollmentRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassRequest;
 import com.blissfuljuan.aiprojectevaluation.dto.courseclass.CourseClassResponse;
+import com.blissfuljuan.aiprojectevaluation.dto.user.UserSummaryResponse;
 import com.blissfuljuan.aiprojectevaluation.security.service.CustomUserDetails;
 import com.blissfuljuan.aiprojectevaluation.service.courseclass.CourseClassService;
 import jakarta.validation.Valid;
@@ -51,6 +52,14 @@ public class CourseClassController {
             @AuthenticationPrincipal CustomUserDetails currentUser
     ) {
         return ResponseEntity.ok(courseClassService.getClassesByInstructor(currentUser.getUserId()));
+    }
+
+    @GetMapping("/{classId}/eligible-group-members")
+    public ResponseEntity<List<UserSummaryResponse>> getEligibleGroupMembers(
+            @PathVariable Long classId,
+            @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        return ResponseEntity.ok(courseClassService.getEligibleGroupMembers(classId, currentUser.getUserId()));
     }
 
     @PostMapping

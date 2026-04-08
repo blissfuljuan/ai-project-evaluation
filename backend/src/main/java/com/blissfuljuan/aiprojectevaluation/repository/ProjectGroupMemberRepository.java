@@ -11,4 +11,5 @@ public interface ProjectGroupMemberRepository extends JpaRepository<ProjectGroup
     boolean existsByProjectGroupIdAndUserId(Long groupId, Long userId);
     Optional<ProjectGroupMember> findByCourseClassIdAndUserId(Long classId, Long userId);
     List<ProjectGroupMember> findByProjectGroupId(Long groupId);
+    List<ProjectGroupMember> findByUserId(Long userId);
 }
