@@ -27,7 +27,7 @@ export function LoginForm() {
 
     try {
       await login({ email, password });
-      if (!error) navigate("/app/dashboard");
+      navigate("/app/dashboard");
     } finally {
       setLoading(false);
     }
