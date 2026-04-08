@@ -28,6 +28,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+type GroupsPageData = {
+  classData: CourseClass[];
+  groupData: Group[];
+};
+
+let groupsPageDataRequest: Promise<GroupsPageData> | null = null;
+
+function loadGroupsPageData() {
+  if (!groupsPageDataRequest) {
+    groupsPageDataRequest = Promise.all([
+      classApi.listMine(),
+      groupApi.listMine(),
+    ])
+      .then(([classData, groupData]) => ({ classData, groupData }))
+      .finally(() => {
+        groupsPageDataRequest = null;
+      });
+  }
+
+  return groupsPageDataRequest;
+}
+
 export function GroupsPage() {
   const { user } = useUser();
   const [classes, setClasses] = useState<CourseClass[]>([]);
@@ -47,10 +69,7 @@ export function GroupsPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [classData, groupData] = await Promise.all([
-          classApi.listMine(),
-          groupApi.listMine(),
-        ]);
+        const { classData, groupData } = await loadGroupsPageData();
         setClasses(classData);
         setGroups(groupData);
       } catch (err: any) {
