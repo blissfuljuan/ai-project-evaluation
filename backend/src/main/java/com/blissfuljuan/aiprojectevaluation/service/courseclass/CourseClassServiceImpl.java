@@ -145,6 +145,17 @@ public class CourseClassServiceImpl implements CourseClassService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public List<UserSummaryResponse> getStudentsByOwnedClass(Long classId, Long instructorId) {
+        findOwnedClass(classId, instructorId);
+
+        return classMemberRepository.findByCourseClassIdAndStatus(classId, MembershipStatus.ACTIVE)
+                .stream()
+                .map(ClassMember::getUser)
+                .map(UserSummaryResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
     private CourseClass findOwnedClass(Long classId, Long instructorId) {
         return courseClassRepository.findByIdAndInstructorId(classId, instructorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Class not found with id: " + classId));

@@ -62,6 +62,16 @@ public class CourseClassController {
         return ResponseEntity.ok(courseClassService.getEligibleGroupMembers(classId, currentUser.getUserId()));
     }
 
+    @GetMapping("/{classId}/students")
+    public ResponseEntity<List<UserSummaryResponse>> getStudentsByOwnedClass(
+            @PathVariable Long classId,
+            @AuthenticationPrincipal CustomUserDetails currentUser
+    ) {
+        return ResponseEntity.ok(
+                courseClassService.getStudentsByOwnedClass(classId, currentUser.getUserId())
+        );
+    }
+
     @PostMapping
     public ResponseEntity<CourseClassResponse> createClass(
             @Valid @RequestBody CourseClassRequest request,
