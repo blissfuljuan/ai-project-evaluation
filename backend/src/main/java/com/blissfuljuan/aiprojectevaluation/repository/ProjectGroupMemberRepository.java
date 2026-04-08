@@ -1,6 +1,7 @@
 package com.blissfuljuan.aiprojectevaluation.repository;
 
 import com.blissfuljuan.aiprojectevaluation.model.ProjectGroupMember;
+import com.blissfuljuan.aiprojectevaluation.model.enumtype.ProjectGroupMemberRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,6 +11,8 @@ public interface ProjectGroupMemberRepository extends JpaRepository<ProjectGroup
     boolean existsByCourseClassIdAndUserId(Long classId, Long userId);
     boolean existsByProjectGroupIdAndUserId(Long groupId, Long userId);
     Optional<ProjectGroupMember> findByCourseClassIdAndUserId(Long classId, Long userId);
+    Optional<ProjectGroupMember> findByProjectGroupIdAndUserId(Long groupId, Long userId);
+    Optional<ProjectGroupMember> findFirstByProjectGroupIdAndRole(Long groupId, ProjectGroupMemberRole role);
     List<ProjectGroupMember> findByProjectGroupId(Long groupId);
     List<ProjectGroupMember> findByUserId(Long userId);
 }

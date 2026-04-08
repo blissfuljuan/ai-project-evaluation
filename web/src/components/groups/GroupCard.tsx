@@ -3,28 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface GroupCardProps {
   group: Group;
+  onSelect?: (group: Group) => void;
 }
 
-export function GroupCard({ group }: GroupCardProps) {
+export function GroupCard({ group, onSelect }: GroupCardProps) {
   return (
-    <Card>
-      <CardHeader>
+    <Card
+      className={`text-left ${onSelect ? "cursor-pointer transition-colors hover:bg-muted/40" : ""}`}
+      onClick={onSelect ? () => onSelect(group) : undefined}
+    >
+      <CardHeader className="justify-items-start text-left">
         <CardTitle>{group.groupName}</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {group.courseClassCode} - {group.courseClassTitle}
-        </p>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="space-y-2">
-          <p className="text-sm font-medium">Members</p>
-          <ul className="space-y-2 text-sm text-muted-foreground">
-            {group.members.map((member) => (
-              <li key={member.id}>
-                {member.firstname} {member.lastname} ({member.email})
-              </li>
-            ))}
-          </ul>
-        </div>
+      <CardContent className="text-left">
+        <p className="text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">Group Leader:</span>{" "}
+          {group.groupLeader
+            ? `${group.groupLeader.firstname} ${group.groupLeader.lastname}`
+            : "Not assigned"}
+        </p>
       </CardContent>
     </Card>
   );
