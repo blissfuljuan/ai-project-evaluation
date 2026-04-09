@@ -19,6 +19,7 @@ export function Sidebar() {
         <SidebarLink to="/app/dashboard">Dashboard</SidebarLink>
         <SidebarLink to="/app/classes">Classes</SidebarLink>
         <SidebarLink to="/app/projects">Projects</SidebarLink>
+        <SidebarLink to="/app/rubrics">Rubrics</SidebarLink>
         <SidebarLink to="/app/groups">Groups</SidebarLink>
         <SidebarLink to="/app/submissions">Submissions</SidebarLink>
         <SidebarLink to="/app/evaluations">Evaluations</SidebarLink>
