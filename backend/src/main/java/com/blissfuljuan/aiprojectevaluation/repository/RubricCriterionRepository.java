@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface RubricCriterionRepository extends JpaRepository<RubricCriterion, Long> {
     List<RubricCriterion> findByRubricIdOrderByDisplayOrderAsc(Long rubricId);
+    void deleteByRubricId(Long rubricId);
 }

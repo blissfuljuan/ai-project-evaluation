@@ -12,6 +12,8 @@ import { GroupsPage } from "./components/pages/GroupsPage";
 import SubmissionsPage from "./components/pages/SubmissionsPage";
 import EvaluationsPage from "./components/pages/EvaluationsPage";
 import { ProfilePage } from "./components/pages/ProfilePage";
+import { RubricsPage } from "./components/pages/RubricsPage";
+import { RubricDetailsPage } from "./components/pages/RubricDetailsPage";
 import {
   Dialog,
   DialogContent,
@@ -74,6 +76,8 @@ function App() {
           <Route path="classes" element={<ClassesPage />} />
           <Route path="projects" element={<ProjectsPage />} />
           <Route path="projects/create" element={<CreateProjectPage />} />
+          <Route path="rubrics" element={<RubricsPage />} />
+          <Route path="rubrics/:rubricId" element={<RubricDetailsPage />} />
           <Route path="groups" element={<GroupsPage />} />
           <Route path="submissions" element={<SubmissionsPage />} />
           <Route path="evaluations" element={<EvaluationsPage />} />
