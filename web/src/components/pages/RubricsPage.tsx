@@ -52,29 +52,6 @@ export function RubricsPage() {
     setDialogOpen(true);
   };
 
-  const handleEdit = (rubric: Rubric) => {
-    setEditingRubric(rubric);
-    setDialogOpen(true);
-  };
-
-  const handleDelete = async (rubric: Rubric) => {
-    const shouldDelete = window.confirm(`Delete the "${rubric.name}" rubric?`);
-
-    if (!shouldDelete) {
-      return;
-    }
-
-    try {
-      setError(null);
-      await rubricApi.remove(rubric.id);
-      await loadPageData();
-    } catch (err: any) {
-      const message =
-        err?.response?.data?.message || err?.message || "Unable to delete rubric.";
-      setError(message);
-    }
-  };
-
   const handleSubmit = async (payload: CreateRubricRequest) => {
     try {
       setSaving(true);
@@ -121,15 +98,12 @@ export function RubricsPage() {
           canCreate={classes.length > 0}
           rubrics={rubrics}
           onCreate={handleCreate}
-          onDelete={handleDelete}
-          onEdit={handleEdit}
         />
       )}
 
       {!loading && classes.length > 0 && rubrics.length > 0 && (
         <div className="rounded-xl border bg-background p-4 text-sm text-muted-foreground">
-          Teachers can review rubric details directly from each card, then use
-          edit or delete actions to keep criteria up to date.
+          Select any rubric card to open its details page and manage its criteria.
         </div>
       )}
 

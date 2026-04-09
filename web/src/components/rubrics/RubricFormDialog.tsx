@@ -147,6 +147,16 @@ export function RubricFormDialog({
       return null;
     }
 
+    const totalWeight = normalized.reduce(
+      (sum, criterion) => sum + criterion.weight,
+      0
+    );
+
+    if (totalWeight !== 100) {
+      setError("Criterion weights must total exactly 100%.");
+      return null;
+    }
+
     return normalized;
   };
 
@@ -178,8 +188,6 @@ export function RubricFormDialog({
       name: name.trim(),
       description: description.trim(),
       courseClassId: selectedClass.id,
-      courseClassCode: selectedClass.classCode,
-      courseClassTitle: selectedClass.title,
       criteria: normalizedCriteria,
     });
   };

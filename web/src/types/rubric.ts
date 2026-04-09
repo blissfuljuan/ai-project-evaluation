@@ -30,8 +30,6 @@ export interface CreateRubricRequest {
   name: string;
   description: string;
   courseClassId: number;
-  courseClassCode?: string;
-  courseClassTitle?: string;
   criteria: RubricCriterionInput[];
 }
 
